@@ -3,3 +3,5 @@ deps
 .elixir_ls
 .circleci
 apps/nerves_hub_www/assets/node_modules
+Dockerfile
+deploy.yaml

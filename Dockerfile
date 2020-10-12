@@ -6,6 +6,8 @@ RUN apk add 'fwup~=1.8.1' \
   --repository http://nl.alpinelinux.org/alpine/edge/community/ \
   --no-cache
 
+# ENV MIX_ENV=prod
+
 RUN echo "127.0.0.1 nerves-hub.org" | tee -a /etc/hosts
 RUN mix local.hex --force && mix local.rebar --force
 RUN mix archive.install hex phx_new --force
@@ -16,9 +18,6 @@ ADD . /build/
 WORKDIR /build
 RUN mix deps.clean --all && mix do deps.get, compile
 RUN mix assets.install && mix assets.build
-
+# RUN mix release nerves_hub_www
 # RUN make reset-db
-EXPOSE 4000
-EXPOSE 4001
-EXPOSE 4002
 CMD ["mix", "phx.server"]
