@@ -5,3 +5,4 @@ deps
 apps/nerves_hub_www/assets/node_modules
 Dockerfile
 deploy.yaml
+.env
