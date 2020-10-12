@@ -67,7 +67,7 @@ config :nerves_hub_web_core, NervesHubWebCore.Firmwares.Upload.File,
 
 # config :nerves_hub_web_core, NervesHubWebCore.Firmwares.Upload.S3, bucket: System.get_env("S3_BUCKET_NAME")
 
-config :nerves_hub_web_core, NervesHubWebCore.Repo, ssl: false
+config :nerves_hub_web_core, NervesHubWebCore.Repo, ssl: true
 
 config :nerves_hub_web_core, NervesHubWebCore.CertificateAuthority,
   host: "0.0.0.0",
