@@ -83,6 +83,8 @@ defmodule NervesHubWWWWeb.Router do
       post("/certificates", OrgCertificateController, :create)
       get("/certificates/new", OrgCertificateController, :new)
       delete("/certificates/:serial", OrgCertificateController, :delete)
+      get("/certificates/:serial/edit", OrgCertificateController, :edit)
+      put("/certificates/:serial", OrgCertificateController, :update)
       get("/users", OrgUserController, :index)
       get("/users/:user_id", OrgUserController, :edit)
       put("/users/:user_id", OrgUserController, :update)
@@ -114,7 +116,6 @@ defmodule NervesHubWWWWeb.Router do
       pipe_through(:org)
 
       get("/", ProductController, :index)
-      put("/", ProductController, :update)
       get("/new", ProductController, :new)
       post("/", ProductController, :create)
 
@@ -123,12 +124,14 @@ defmodule NervesHubWWWWeb.Router do
 
         get("/", ProductController, :show)
         get("/edit", ProductController, :edit)
+        put("/", ProductController, :update)
         delete("/", ProductController, :delete)
 
         scope "/devices" do
           get("/", DeviceController, :index)
           post("/", DeviceController, :create)
           get("/new", DeviceController, :new)
+          get("/export", ProductController, :devices_export)
 
           scope "/:device_identifier" do
             pipe_through(:device)

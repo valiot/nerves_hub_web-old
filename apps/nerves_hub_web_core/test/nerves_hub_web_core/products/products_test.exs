@@ -12,11 +12,7 @@ defmodule NervesHubWebCore.ProductsTest do
     @invalid_attrs %{name: nil}
 
     setup do
-      user = Fixtures.user_fixture()
-      org = Fixtures.org_fixture(user)
-      product = Fixtures.product_fixture(user, org, %{name: "a product"})
-
-      {:ok, %{product: product, org: org, user: user}}
+      {:ok, Fixtures.standard_fixture()}
     end
 
     test "get_products_by_user_and_org returns products for user", %{
@@ -66,7 +62,11 @@ defmodule NervesHubWebCore.ProductsTest do
       assert product == Products.get_product!(product.id)
     end
 
-    test "delete_product/1 deletes the product", %{product: product} do
+    test "delete_product/1 deletes the product" do
+      user = Fixtures.user_fixture()
+      org = Fixtures.org_fixture(user)
+      product = Fixtures.product_fixture(user, org, %{name: "a product"})
+
       assert {:ok, %Product{}} = Products.delete_product(product)
       assert_raise Ecto.NoResultsError, fn -> Products.get_product!(product.id) end
     end
@@ -94,6 +94,56 @@ defmodule NervesHubWebCore.ProductsTest do
       user = Fixtures.user_fixture()
       Accounts.add_org_user(org, user, %{role: :read})
       assert [^product] = Products.get_products_by_user_and_org(user, org)
+    end
+
+    test "create devices CSV IO", %{
+      device: device,
+      device_certificate: db_cert,
+      product: product,
+      org: org
+    } do
+      ##
+      # Need to create a second certificate without a DER saved to test JSON
+      # TODO: Remove when DERs are saved
+      %{cert: ca1, key: ca1_key} = Fixtures.ca_certificate_fixture(org)
+
+      otp_cert =
+        X509.PrivateKey.new_ec(:secp256r1)
+        |> X509.PublicKey.derive()
+        |> X509.Certificate.new("CN=#{device.identifier}", ca1, ca1_key)
+
+      %{db_cert: db_cert_no_der} =
+        Fixtures.device_certificate_fixture_without_der(device, otp_cert)
+
+      # Generate CSV
+      csv_io = Products.devices_csv(product)
+
+      [[id, desc, tags, pname, oname, cert_io] | _] = NimbleCSV.RFC4180.parse_string(csv_io)
+
+      assert id == device.identifier
+      assert desc == device.description || ""
+      assert String.split(tags, ",") == device.tags
+      assert pname == product.name
+      assert oname == org.name
+
+      String.split(cert_io, "\n\n")
+      |> Enum.each(fn
+        "{" <> _ = cert_json ->
+          # TODO: Remove testing JSON when DERs saved
+          parsed_cert = Jason.decode!(cert_json)
+
+          assert parsed_cert["serial"] == db_cert_no_der.serial
+          assert parsed_cert["not_before"] == DateTime.to_iso8601(db_cert_no_der.not_before)
+          assert parsed_cert["not_after"] == DateTime.to_iso8601(db_cert_no_der.not_after)
+          assert Base.decode16!(parsed_cert["aki"]) == db_cert_no_der.aki
+          assert Base.decode16!(parsed_cert["ski"]) == db_cert_no_der.ski
+
+        "---" <> _ = cert_pem ->
+          assert X509.Certificate.from_pem!(cert_pem) == X509.Certificate.from_der!(db_cert.der)
+
+        _ ->
+          :ignore
+      end)
     end
   end
 end

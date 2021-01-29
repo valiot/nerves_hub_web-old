@@ -55,7 +55,9 @@ defmodule NervesHubDevice.SSL do
 
   def verify_device_certificate(certificate, state) do
     case Devices.get_device_certificate_by_x509(certificate) do
-      {:ok, _cert} ->
+      {:ok, cert} ->
+        # TODO: Remove once enough time has allowed existing DERs to be captured ¬
+        Devices.update_device_certificate(cert, %{der: Certificate.to_der(certificate)})
         {:valid, state}
 
       _ ->
@@ -66,12 +68,15 @@ defmodule NervesHubDevice.SSL do
   def verify_device(certificate) do
     case Devices.get_device_certificate_by_x509(certificate) do
       {:ok, cert} ->
-        Devices.update_device_certificate(cert, %{last_used: DateTime.utc_now()})
-        {:ok, cert}
+        # TODO: Remove once enough time has allowed existing DERs to be captured ¬
+        Devices.update_device_certificate(cert, %{
+          last_used: DateTime.utc_now(),
+          der: Certificate.to_der(certificate)
+        })
 
       _ ->
         with aki <- Certificate.get_aki(certificate),
-             {:ok, %CACertificate{org_id: org_id}} <- Devices.get_ca_certificate_by_aki(aki),
+             {:ok, %CACertificate{org_id: org_id}} <- Devices.get_ca_certificate_by_ski(aki),
              {:ok, org} <- Accounts.get_org(org_id),
              identifier <- Certificate.get_common_name(certificate),
              {:ok, device} <- Devices.get_device_by_identifier(org, identifier) do
@@ -87,13 +92,15 @@ defmodule NervesHubDevice.SSL do
          serial <- Certificate.get_serial_number(certificate),
          aki <- Certificate.get_aki(certificate),
          ski <- Certificate.get_ski(certificate),
+         der <- Certificate.to_der(certificate),
          {not_before, not_after} <- Certificate.get_validity(certificate),
          params <- %{
            serial: serial,
            aki: aki,
            ski: ski,
            not_before: not_before,
-           not_after: not_after
+           not_after: not_after,
+           der: der
          },
          {:ok, db_cert} <- Devices.create_device_certificate(device, params) do
       {:ok, db_cert}

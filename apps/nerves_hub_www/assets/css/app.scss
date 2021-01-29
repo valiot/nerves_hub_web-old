@@ -6,7 +6,6 @@ $fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
 
 @import "_animate.css";
-@import "~xterm/css/xterm.css";
 @import "audit_log_feed";
 @import "console";
 @import "layout";
@@ -141,5 +140,27 @@ html body {
 
   &.alert-warning {
     background-color: var(--warning);
+  }
+}
+
+.progress {
+  background: rgba(255, 255, 255, 0.1);
+
+  .progress-bar {
+    background-color: var(--primary);
+    font-weight: 700;
+  }
+
+  &.device-show {
+    height: 1.5rem;
+    margin-top: .5rem;
+
+    .progress-bar {
+      height: 1.5rem;
+      font-size: .875rem;
+      text-align: right;
+      padding: 0 .5rem;
+      min-width: 2rem;
+    }
   }
 }

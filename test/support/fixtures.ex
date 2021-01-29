@@ -31,10 +31,12 @@ defmodule NervesHubWebCore.Fixtures do
     is_active: false
   }
   @device_params %{tags: ["beta", "test"]}
-  @product_params %{name: "valid product"}
+  @product_params %{name: "valid product", delta_updatable: true}
 
   @user_ca_key Path.expand("../fixtures/ssl/user-root-ca-key.pem", __DIR__)
   @user_ca_cert Path.expand("../fixtures/ssl/user-root-ca.pem", __DIR__)
+
+  defdelegate reload(record), to: Repo
 
   def path(), do: Path.expand("../fixtures", __DIR__)
 
@@ -194,19 +196,19 @@ defmodule NervesHubWebCore.Fixtures do
     firmware
   end
 
-  def firmware_patch_fixture(%Firmwares.Firmware{id: source_id}, %Firmwares.Firmware{
+  def firmware_delta_fixture(%Firmwares.Firmware{id: source_id}, %Firmwares.Firmware{
         id: target_id,
         org_id: org_id,
         uuid: uuid
       }) do
-    {:ok, patch} =
-      Firmwares.insert_patch(%{
+    {:ok, firmware_delta} =
+      Firmwares.insert_firmware_delta(%{
         source_id: source_id,
         target_id: target_id,
         upload_metadata: @uploader.metadata(org_id, "#{uuid}.fw")
       })
 
-    patch
+    firmware_delta
   end
 
   def firmware_transfer_fixture(org_id, firmware_uuid, params \\ %{}) do
@@ -277,6 +279,18 @@ defmodule NervesHubWebCore.Fixtures do
   end
 
   def device_certificate_fixture(%Devices.Device{} = device, cert) do
+    serial = Certificate.get_serial_number(cert)
+    {not_before, not_after} = Certificate.get_validity(cert)
+    aki = Certificate.get_aki(cert)
+    ski = Certificate.get_ski(cert)
+    der = Certificate.to_der(cert)
+    params = %{serial: serial, aki: aki, ski: ski, not_before: not_before, not_after: not_after, der: der}
+
+    {:ok, device_cert} = Devices.create_device_certificate(device, params)
+    %{db_cert: device_cert, cert: cert}
+  end
+
+  def device_certificate_fixture_without_der(%Devices.Device{} = device, cert) do
     serial = Certificate.get_serial_number(cert)
     {not_before, not_after} = Certificate.get_validity(cert)
     aki = Certificate.get_aki(cert)

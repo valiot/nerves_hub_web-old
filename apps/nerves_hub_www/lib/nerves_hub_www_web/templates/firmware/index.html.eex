@@ -23,8 +23,9 @@
       <tr>
         <th>UUID</th>
         <th>Version</th>
+        <th>Platform</th>
         <th>Firmware key</th>
-        <th>Created on</th>
+        <th>Uploaded on</th>
         <th></th>
       </tr>
     </thead>
@@ -41,13 +42,17 @@
           <%= firmware.version %>
         </td>
         <td>
+          <div class="mobile-label help-text">Platform</div>
+          <%= firmware.platform %>
+        </td>
+        <td>
           <div class="mobile-label help-text">Firmware key</div>
           <div>
             <span class="badge"><%= format_signed(firmware, @org) %></span>
           </div>
         </td>
         <td>
-          <div class="mobile-label help-text">Created on</div>
+          <div class="mobile-label help-text">Uploaded on</div>
           <div>
             <%= if is_nil(firmware.inserted_at) do %>
               <span class="color-white-50">Never</span>

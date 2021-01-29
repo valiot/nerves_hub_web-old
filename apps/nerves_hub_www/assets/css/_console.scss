@@ -1,3 +1,5 @@
+// Console V1
+
 .console-wrapper {
   background: black;
   padding: 1rem;
@@ -53,4 +55,54 @@
 
 .console-input:focus {
   outline: none;
+}
+
+// Console V2
+
+@import "~xterm/css/xterm.css";
+
+#console-html, #console-body {
+  background-color: black;
+  height: 100%;
+  border: solid gray;
+  border-width: 2px;
+  .xterm {
+    height: 100%;
+  }
+}
+
+.console-details-row {
+  padding: 1rem;
+  border-radius: 4px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.console-v2 {
+  height: 100%;
+  color: white;
+}
+
+.online {
+  background-image: url("/images/icons/check.svg");
+  padding-left: 1.5rem;
+  background-repeat: no-repeat;
+  font-weight: bold;
+  display: inline-flex;
+  line-height: 44px;
+}
+
+.offline, .rebooting {
+  background-image: url("/images/icons/cross.svg");
+  padding-left: 1.5rem;
+  background-repeat: no-repeat;
+  font-weight: bold;
+  display: inline-flex;
+  line-height: 44px;
+}
+
+.console-progress {
+  width: 100px;
 }

@@ -143,7 +143,7 @@ defmodule NervesHubWebCore.Devices do
           {:error, :not_found} -> nil
         end
 
-      {:ok, url} = Firmwares.get_firmware_url(source, target, fwup_version)
+      {:ok, url} = Firmwares.get_firmware_url(source, target, fwup_version, product)
       {:ok, meta} = Firmwares.metadata_from_firmware(target)
 
       Phoenix.PubSub.broadcast(
@@ -295,6 +295,15 @@ defmodule NervesHubWebCore.Devices do
     end
   end
 
+  @spec get_ca_certificate_by_ski(binary) :: {:ok, CACertificate.t()} | {:error, any()}
+  def get_ca_certificate_by_ski(ski) do
+    Repo.get_by(CACertificate, ski: ski)
+    |> case do
+      nil -> {:error, :not_found}
+      ca_cert -> {:ok, ca_cert}
+    end
+  end
+
   @spec get_ca_certificate_by_serial(binary) :: {:ok, CACertificate.t()} | {:error, any()}
   def get_ca_certificate_by_serial(serial) do
     Repo.get_by(CACertificate, serial: serial)
@@ -410,7 +419,7 @@ defmodule NervesHubWebCore.Devices do
           {:error, :not_found} -> nil
         end
 
-      {:ok, url} = Firmwares.get_firmware_url(source, target, fwup_version)
+      {:ok, url} = Firmwares.get_firmware_url(source, target, fwup_version, product)
       {:ok, meta} = Firmwares.metadata_from_firmware(target)
 
       %{update_available: true, firmware_url: url, firmware_meta: meta}
