@@ -10,7 +10,7 @@
     "check_formatting": "prettier -c js/**/*.js"
   },
   "dependencies": {
-    "bootstrap": "^4.4.1",
+    "bootstrap": "^4.6.2",
     "joshjs": "^1.0.7",
     "jquery": "^3.5.1",
     "moment": "^2.27.0",
